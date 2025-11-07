@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blockchain Core Concepts Guide</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .tab-active {
+            background-color: #fff;
+            color: #d97706;
+            border-bottom: 2px solid #d97706;
+        }
+        .tab-inactive {
+            background-color: #fef3c7;
+            color: #92400e;
+            border-bottom: 2px solid transparent;
+        }
+        .concept-nav-active {
+            background-color: #fef9c3;
+            color: #b45309;
+            font-weight: 600;
+        }
+        .concept-nav-inactive {
+            background-color: #fff;
+            color: #363636;
+        }
+        .accordion-header {
+            cursor: pointer;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .accordion-open .accordion-content {
+            max-height: 500px;
+        }
+        .accordion-open .accordion-arrow {
+            transform: rotate(90deg);
+        }
+        .accordion-arrow {
+            transition: transform 0.3s ease-in-out;
+        }
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="bg-orange-50 text-stone-800">
+
+    <!-- 
+        Chosen Palette: Warm Sand
+        * Main Background: bg-orange-50
+        * Card/Panel Background: bg-white
+        * Text: text-stone-800
+        * Headers/Accents: text-amber-700 / text-b45309
+        * Tabs/Buttons: bg-amber-600 (active), bg-fef3c7 (inactive)
+    -->
+    <!-- 
+        Application Structure Plan: 
+        The SPA is structured as a task-oriented "Study App" with three main views, selectable by tabs: "Key Concepts," "Vocabulary," and "Self-Test."
+        This structure was chosen over a linear document to align with a user's study habits.
+        1.  "Key Concepts" (Default View): Uses a master-detail layout. A sub-navigation menu allows users to select one concept at a time, displaying its details in a main pane. This prevents information overload and encourages focused exploration.
+        2.  "Vocabulary": Uses an interactive accordion list. This "click-to-reveal" mechanism is ideal for active recall of definitions.
+        3.  "Self-Test": Uses a Q&A toggle format. This directly supports self-assessment.
+        This design transforms the static guide into an interactive tool, enhancing usability and a user-controlled learning flow.
+    -->
+    <!-- 
+        Visualization & Content Choices:
+        The source report is purely textual, so no data charts (Chart.js) are needed. Visualizations are informational and structural.
+        * Report Info: 3 Core Principles. Goal: Inform/Compare. Viz/Presentation: 3-column responsive grid (HTML/Tailwind). Interaction: None. Justification: Visually separates the 3 distinct concepts for clarity. Library: HTML/Tailwind.
+        * Report Info: 5 Key Concepts. Goal: Organize/Explore. Viz/Presentation: Master-Detail UI. Interaction: Clickable sub-nav (JS-driven show/hide). Justification: Breaks down complex info, user-controlled exploration. Library: Vanilla JS, HTML/Tailwind.
+        * Report Info: PoW vs. PoS Comparison. Goal: Compare. Viz/Presentation: 2-column grid (HTML/Tailwind). Interaction: None. Justification: Direct side-by-side comparison. Library: HTML/Tailwind.
+        * Report Info: 10 Vocabulary Terms. Goal: Inform/Test. Viz/Presentation: Accordion List. Interaction: Click to expand/collapse (JS-driven). Justification: Active recall, clean UI. Library: Vanilla JS, HTML/Tailwind.
+        * Report Info: 6 Key Questions. Goal: Test Knowledge. Viz/Presentation: Q&A Toggle. Interaction: "Show Answer" button (JS-driven show/hide). Justification: Classic study method. Library: Vanilla JS, HTML/Tailwind.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+
+        <header class="mb-6">
+            <h1 class="text-4xl font-bold text-amber-800 mb-2">Blockchain Core Concepts Study Guide</h1>
+            <p class="text-lg text-stone-700">This guide covers the fundamental principles of blockchain technology, starting with its core concepts of decentralization, cryptographic security, and consensus. It details the structure of a blockchain, including blocks, hashing, and Merkle trees, and explains the critical role of cryptography through public/private keys. The guide also compares and contrasts the most common consensus mechanisms, Proof of Work (PoW) and Proof of Stake (PoS), and introduces key applications like smart contracts and DApps.</p>
+        </header>
+
+        <nav class="flex border-b-2 border-amber-200 mb-6">
+            <button class="nav-tab tab-active text-lg font-semibold py-3 px-6" data-target="content-key-concepts">Key Concepts</button>
+            <button class="nav-tab tab-inactive text-lg font-semibold py-3 px-6" data-target="content-vocabulary">Vocabulary</button>
+            <button class="nav-tab tab-inactive text-lg font-semibold py-3 px-6" data-target="content-self-test">Self-Test</button>
+        </nav>
+
+        <main id="content-key-concepts" class="app-content">
+            <p class="text-md text-stone-600 mb-6">This section breaks down the most important ideas from the study guide. Select a topic from the navigation panel to learn more about it.</p>
+            <div class="flex flex-col md:flex-row gap-6">
+                <aside class="md:w-1/3 lg:w-1/4">
+                    <nav id="concept-nav" class="flex flex-col rounded-lg overflow-hidden shadow-md border border-amber-200">
+                        <a href="#" class="concept-nav-item concept-nav-active p-4" data-target="concept-principles">Three Core Principles</a>
+                        <a href="#" class="concept-nav-item concept-nav-inactive p-4 border-t border-amber-200" data-target="concept-immutability">Immutability</a>
+                        <a href="#" class="concept-nav-item concept-nav-inactive p-4 border-t border-amber-200" data-target="concept-public-private">Public vs. Private</a>
+                        <a href="#" class="concept-nav-item concept-nav-inactive p-4 border-t border-amber-200" data-target="concept-pow-pos">PoW vs. PoS</a>
+                        <a href="#" class="concept-nav-item concept-nav-inactive p-4 border-t border-amber-200" data-target="concept-smart-contracts">Smart Contracts</a>
+                    </nav>
+                </aside>
+                <section class="md:w-2/3 lg:w-3/4">
+                    
+                    <div id="concept-principles" class="concept-detail-pane bg-white p-6 rounded-lg shadow-lg border border-amber-100">
+                        <h2 class="text-3xl font-bold text-amber-700 mb-4">The Three Core Principles</h2>
+                        <p class="mb-6">The foundation of blockchain technology rests on three main pillars that work together to create a secure and trustworthy system:</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-orange-50 p-4 rounded-lg border border-amber-200">
+                                <h3 class="font-bold text-lg text-amber-800">1. Decentralization</h3>
+                                <p class="text-stone-700">Control and data are distributed across a network of computers rather than being held by a single, central authority. This removes single points of failure.</p>
+                            </div>
+                            <div class="bg-orange-50 p-4 rounded-lg border border-amber-200">
+                                <h3 class="font-bold text-lg text-amber-800">2. Cryptographic Security</h3>
+                                <p class="text-stone-700">Advanced cryptography (like hashing and digital signatures) is used to secure data, verify transactions, and prove ownership, making the system tamper-evident.</p>
+                            </div>
+                            <div class="bg-orange-50 p-4 rounded-lg border border-amber-200">
+                                <h3 class="font-bold text-lg text-amber-800">3. Consensus Mechanisms</h3>
+                                <p class="text-stone-700">These are the rules and protocols that allow all the distributed participants in the network to agree on the state of the ledger and the validity of new blocks.</p>
+                            </div>
+                        </div>
+                        <button class="gemini-explain-btn mt-6 bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-amber-700 transition-colors" data-concept="The Three Core Principles of Blockchain">✨ Explain It Simply</button>
+                    </div>
+
+                    <div id="concept-immutability" class="concept-detail-pane hidden bg-white p-6 rounded-lg shadow-lg border border-amber-100">
+                        <h2 class="text-3xl font-bold text-amber-700 mb-4">Immutability</h2>
+                        <p class="text-stone-700">Immutability is the principle that once data is written to the blockchain, it is permanent and cannot be altered or deleted. This is a core feature that creates trust in the ledger.</p>
+                        <p class="text-stone-700 mt-4">It's achieved by cryptographically linking blocks together in a chain. Each block contains the hash (a unique digital fingerprint) of the block that came before it. If someone tried to change data in an old block, that block's hash would change. This would break the "chain" because the new hash would no longer match the hash stored in the next block. To successfully alter one block, an attacker would have to change that block and then recalculate all subsequent blocks, which is computationally infeasible in a decentralized network.</p>
+                        <button class="gemini-explain-btn mt-6 bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-amber-700 transition-colors" data-concept="Blockchain Immutability">✨ Explain It Simply</button>
+                    </div>
+
+                    <div id="concept-public-private" class="concept-detail-pane hidden bg-white p-6 rounded-lg shadow-lg border border-amber-100">
+                        <h2 class="text-3xl font-bold text-amber-700 mb-4">Public vs. Private Blockchains</h2>
+                        <p class="mb-6 text-stone-700">Blockchains are primarily categorized by their access model, which determines who can participate and read the data. This creates a fundamental trade-off between decentralization and control.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <h3 class="font-bold text-xl text-amber-800">Public Blockchains</h3>
+                                <p class="text-stone-700 mt-2">These are open, permissionless networks where anyone in the world can join, read the entire ledger, submit transactions, and participate in the consensus process (e.g., mining). They are highly decentralized and transparent.</p>
+                                <p class="font-semibold text-stone-600 mt-3">Examples: Bitcoin, Ethereum</p>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-xl text-amber-800">Private Blockchains</h3>
+                                <p class="text-stone-700 mt-2">These are restricted, permissioned networks where only authorized participants can join. Access to read or write data is controlled by a central administrator or consortium. They prioritize privacy, speed, and control over decentralization.</p>
+                                <p class="font-semibold text-stone-600 mt-3">Use Case: Often used by businesses for internal record-keeping or supply chain management.</p>
+                            </div>
+                        </div>
+                        <button class="gemini-explain-btn mt-6 bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-amber-700 transition-colors" data-concept="Public vs. Private Blockchains">✨ Explain It Simply</button>
+                    </div>
+
+                    <div id="concept-pow-pos" class="concept-detail-pane hidden bg-white p-6 rounded-lg shadow-lg border border-amber-100">
+                        <h2 class="text-3xl font-bold text-amber-700 mb-4">Proof of Work (PoW) vs. Proof of Stake (PoS)</h2>
+                        <p class="mb-6 text-stone-700">These are the two most common types of consensus mechanisms, the rules the network follows to agree on new blocks.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-orange-50 p-4 rounded-lg border border-amber-200">
+                                <h3 class="font-bold text-xl text-amber-800">Proof of Work (PoW)</h3>
+                                <p class="text-stone-700 mt-2">In PoW, "miners" compete to solve a complex computational puzzle. The first miner to find the solution gets to add the next block to the chain and is rewarded with new coins. This process is highly secure because it requires significant computational power and electricity, making it expensive to attack.</p>
+                                <p class="font-semibold text-stone-600 mt-3">Key Feature: Security through computation.</p>
+                                <p class="font-semibold text-stone-600 mt-1">Main Disadvantage: High energy consumption.</p>
+                            </div>
+                            <div class="bg-orange-50 p-4 rounded-lg border border-amber-200">
+                                <h3 class="font-bold text-xl text-amber-800">Proof of Stake (PoS)</h3>
+                                <p class="text-stone-700 mt-2">In PoS, "validators" are chosen to create new blocks based on the number of coins they hold and are willing to "stake" (or lock up) as collateral. If a validator approves a fraudulent transaction, they are penalized by losing their stake. This system is far more energy-efficient as it doesn't require solving computational puzzles.</p>
+                                <p class="font-semibold text-stone-600 mt-3">Key Feature: Security through economic incentive.</p>
+                                <p class="font-semibold text-stone-600 mt-1">Main Advantage: Energy efficiency.</p>
+                            </div>
+                        </div>
+                        <button class="gemini-explain-btn mt-6 bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-amber-700 transition-colors" data-concept="Proof of Work vs. Proof of Stake">✨ Explain It Simply</button>
+                    </div>
+
+                    <div id="concept-smart-contracts" class="concept-detail-pane hidden bg-white p-6 rounded-lg shadow-lg border border-amber-100">
+                        <h2 class="text-3xl font-bold text-amber-700 mb-4">Smart Contracts</h2>
+                        <p class="text-stone-700">Smart contracts are not traditional contracts, but rather self-executing programs that are stored on a blockchain. The terms of an agreement between two parties are written directly into lines of code.</p>
+                        <p class="text-stone-700 mt-4">When predefined conditions are met, the code automatically executes and enforces the agreement. For example, a smart contract could be programmed to automatically release payment to a musician once a song file is successfully delivered to a streaming service.</p>
+                        <p class="text-stone-700 mt-4">They enable the creation of <span class="font-semibold">Decentralized Applications (DApps)</span> because they allow for complex logic and automated processes to run on the blockchain without relying on a central intermediary or server.</p>
+                        <button class="gemini-explain-btn mt-6 bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-amber-700 transition-colors" data-concept="Smart Contracts and DApps">✨ Explain It Simply</button>
+                    </div>
+
+                </section>
+            </div>
+        </main>
+
+        <main id="content-vocabulary" class="app-content hidden">
+            <p class="text-md text-stone-600 mb-6">Explore key terminology. Click on any term to reveal its definition.</p>
+            <div id="accordion-container" class="space-y-3">
+                
+                <div class="accordion-item bg-white rounded-lg shadow-md border border-amber-100">
+                    <div class="accordion-header flex justify-between items-center p-5">
+                        <h3 class="text-lg font-semibold text-amber-800">Genesis Block</h3>
+                        <span class="accordion-arrow text-amber-800 text-2xl font-bold transform transition-transform duration-300">&gt;</span>
+                    </div>
+                    <div class="accordion-content">
+                        <p class="p-5 pt-0 text-stone-700">The very first block (Block 0) in a blockchain, which serves as the foundation for the entire chain.</p>
+                        <button class="gemini-explain-btn ml-5 mb-5 bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-amber-700 transition-colors" data-concept="Genesis Block">✨ Explain It Simply</button>
+                    </div>
+                </div>
+
+                <div class="accordion-item bg-white rounded-lg shadow-md border border-amber-100">
+                    <div class="accordion-header flex justify-between items-center p-5">
+                        <h3 class="text-lg font-semibold text-amber-800">Hashing</h3>
+                        <span class="accordion-arrow text-amber-800 text-2xl font-bold transform transition-transform duration-300">&gt;</span>
+                    </div>
+                    <div class="accordion-content">
+                        <p class="p-5 pt-0 text-stone-700">A one-way function that converts any input data into a unique, fixed-size string of characters. This is used to create secure links between blocks and to verify data integrity.</p>
+                        <button class="gemini-explain-btn ml-5 mb-5 bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-amber-700 transition-colors" data-concept="Cryptographic Hashing">✨ Explain It Simply</button>
+                    </div>
+                </div>
+
+                <div class="accordion-item bg-white rounded-lg shadow-md border border-amber-100">
+                    <div class="accordion-header flex justify-between items-center p-5">
+                        <h3 class="text-lg font-semibold text-amber-800">Public Key Cryptography</h3>
+                        <span class="accordion-arrow text-amber-800 text-2xl font-bold transform transition-transform duration-300">&gt;</span>
+                    </div>
+                    <div class="accordion-content">
+                        <p class="p-5 pt-0 text-stone-700">An asymmetric encryption system using two keys: a <strong>public key</strong> (which acts as an address for receiving funds) and a <strong>private key</strong> (which is kept secret and used to authorize transactions).</p>
+                        <button class="gemini-explain-btn ml-5 mb-5 bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-amber-700 transition-colors" data-concept="Public Key Cryptography">✨ Explain It Simply</button>
+                    </div>
+                </div>
+
+                <div class="accordion-item bg-white rounded-lg shadow-md border border-amber-100">
+                    <div class="accordion-header flex justify-between items-center p-5">
+                        <h3 class="text-lg font-semibold text-amber-800">Merkle Tree</h3>
+                        <span class="accordion-arrow text-amber-800 text-2xl font-bold transform transition-transform duration-300">&gt;</span>
+                    </div>
+                    <div class="accordion-content">
+                        <p class="p-5 pt-0 text-stone-700">A data structure that uses recursive hashing to efficiently and securely verify the integrity of a large set of data (like all the transactions within a single block).</p>
+                        <button class="gemini-explain-btn ml-5 mb-5 bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-amber-700 transition-colors" data-concept="Merkle Tree">✨ Explain It Simply</button>
+                    </div>
+                </div>
+
+                <div class="accordion-item bg-white rounded-lg shadow-md border border-amber-100">
+                    <div class="accordion-header flex justify-between items-center p-5">
+                        <h3 class="text-lg font-semibold text-amber-800">Consensus Mechanism</h3>
+                        <span class="accordion-arrow text-amber-800 text-2xl font-bold transform transition-transform duration-300">&gt;</span>
+                    </div>
+                    <div class="accordion-content">
+                        <p class="p-5 pt-0 text-stone-700">The protocol that allows a decentralized network to reach an agreement (consensus) on which transactions are valid and should be added to the blockchain.</p>
+                        <button class="gemini-explain-btn ml-5 mb-5 bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-amber-700 transition-colors" data-concept="Consensus Mechanism">✨ Explain It Simply</button>
+                    </div>
+                </div>
+
+                <div class="accordion-item bg-white rounded-lg shadow-md border border-amber-100">
+                    <div class="accordion-header flex justify-between items-center p-5">
+                        <h3 class="text-lg font-semibold text-amber-800">Byzantine Fault Tolerance (BFT)</h3>
+                        <span class="accordion-arrow text-amber-800 text-2xl font-bold transform transition-transform duration-300">&gt;</span>
+                    </div>
+                    <div class="accordion-content">
+                        <p class="p-5 pt-0 text-stone-700">A property of a system that allows it to function correctly and reach consensus even if some nodes fail or act maliciously (named after the "Byzantine Generals' Problem").</p>
+                        <button class="gemini-explain-btn ml-5 mb-5 bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-amber-700 transition-colors" data-concept="Byzantine Fault Tolerance (BFT)">✨ Explain It Simply</button>
+                    </div>
+                </div>
+
+                <div class="accordion-item bg-white rounded-lg shadow-md border border-amber-100">
+                    <div class="accordion-header flex justify-between items-center p-5">
+                        <h3 class="text-lg font-semibold text-amber-800">Difficulty</h3>
+                        <span class="accordion-arrow text-amber-800 text-2xl font-bold transform transition-transform duration-300">&gt;</span>
+                    </div>
+                    <div class="accordion-content">
+                        <p class="p-5 pt-0 text-stone-700">In PoW, this is a network-wide setting that controls how hard the computational puzzle is to solve. It adjusts automatically to ensure blocks are added at a consistent rate (e.g., ~10 minutes for Bitcoin).</p>
+                        <button class="gemini-explain-btn ml-5 mb-5 bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-amber-700 transition-colors" data-concept="Blockchain Difficulty">✨ Explain It Simply</button>
+                    </div>
+                </div>
+
+                <div class="accordion-item bg-white rounded-lg shadow-md border border-amber-100">
+                    <div class="accordion-header flex justify-between items-center p-5">
+                        <h3 class="text-lg font-semibold text-amber-800">Nonce (Number used once)</h3>
+                        <span class="accordion-arrow text-amber-800 text-2xl font-bold transform transition-transform duration-300">&gt;</span>
+                    </div>
+                    <div class="accordion-content">
+                        <p class="p-5 pt-0 text-stone-700">The number that PoW miners repeatedly change in a block header as they search for a hash that meets the network's `Difficulty` target.</p>
+                        <button class="gemini-explain-btn ml-5 mb-5 bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-amber-700 transition-colors" data-concept="Nonce (Number used once)">✨ Explain It Simply</button>
+                    </div>
+                </div>
+
+                <div class="accordion-item bg-white rounded-lg shadow-md border border-amber-100">
+                    <div class="accordion-header flex justify-between items-center p-5">
+                        <h3 class="text-lg font-semibold text-amber-800">Decentralized Applications (DApps)</h3>
+                        <span class="accordion-arrow text-amber-800 text-2xl font-bold transform transition-transform duration-300">&gt;</span>
+                    </div>
+                    <div class="accordion-content">
+                        <p class="p-5 pt-0 text-stone-700">Applications that run on a peer-to-peer network (like a blockchain) using smart contracts, rather than on a central server.</p>
+                        <button class="gemini-explain-btn ml-5 mb-5 bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-amber-700 transition-colors" data-concept="Decentralized Applications (DApps)">✨ Explain It Simply</button>
+                    </div>
+                </div>
+
+                <div class="accordion-item bg-white rounded-lg shadow-md border border-amber-100">
+                    <div class="accordion-header flex justify-between items-center p-5">
+                        <h3 class="text-lg font-semibold text-amber-800">51% Attack</h3>
+                        <span class="accordion-arrow text-amber-800 text-2xl font-bold transform transition-transform duration-300">&gt;</span>
+                    </div>
+                    <div class="accordion-content">
+                        <p class="p-5 pt-0 text-stone-700">A theoretical attack on a PoW blockchain where a single entity controls more than 50% of the network's mining power, allowing them to reverse their own transactions and block others.</p>
+                        <button class="gemini-explain-btn ml-5 mb-5 bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-amber-700 transition-colors" data-concept="51% Attack">✨ Explain It Simply</button>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+
+        <main id="content-self-test" class="app-content hidden">
+            <p class="text-md text-stone-600 mb-6">Test your understanding with these key questions from the guide. Try to answer it yourself before clicking to show the answer.</p>
+            
+            <button id="generate-questions-btn" class="mb-6 bg-amber-700 text-white font-bold py-3 px-6 rounded-lg hover:bg-amber-800 transition-colors w-full md:w-auto">✨ Generate New Practice Questions</button>
+
+            <div class="space-y-4">
+                
+                <div class="bg-white p-6 rounded-lg shadow-lg border border-amber-100">
+                    <h3 class="text-lg font-semibold text-stone-800">How do hashing, the Genesis Block, and the inclusion of the previous block's hash work together to ensure immutability?</h3>
+                    <button class="answer-toggle mt-3 text-sm font-semibold text-amber-700 hover:text-amber-600" data-target="answer-1">Show Answer</button>
+                    <div id="answer-1" class="answer-content hidden mt-3 text-stone-700 bg-orange-50 p-4 rounded-lg">
+                        <p>The <strong>Genesis Block</strong> is the start of the chain. Every block after it contains the <strong>hash</strong> of the block that came before it. This creates a secure, interlocking chain. <strong>Hashing</strong> ensures that if even one piece of data in a block is changed, its hash will completely change. Because this hash is stored in the *next* block, changing an old block would break the chain, making the tampering immediately obvious. This is what makes the ledger immutable.</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-lg border border-amber-100">
+                    <h3 class="text-lg font-semibold text-stone-800">What is the fundamental trade-off between a public blockchain and a private blockchain? (Hint: Think decentralization vs. control).</h3>
+                    <button class="answer-toggle mt-3 text-sm font-semibold text-amber-700 hover:text-amber-600" data-target="answer-2">Show Answer</button>
+                    <div id="answer-2" class="answer-content hidden mt-3 text-stone-700 bg-orange-50 p-4 rounded-lg">
+                        <p>The fundamental trade-off is <strong>decentralization vs. control</strong>. A <strong>public blockchain</strong> (like Bitcoin) is highly decentralized, transparent, and censorship-resistant, but it is also slower and uses more energy. A <strong>private blockchain</strong> (used by businesses) sacrifices decentralization in exchange for high speed, privacy, and centralized control over who can participate and see data.</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-lg border border-amber-100">
+                    <h3 class="text-lg font-semibold text-stone-800">Explain the roles of a public key and a private key in a simple transaction. Why must the private key remain secret?</h3>
+                    <button class="answer-toggle mt-3 text-sm font-semibold text-amber-700 hover:text-amber-600" data-target="answer-3">Show Answer</button>
+                    <div id="answer-3" class="answer-content hidden mt-3 text-stone-700 bg-orange-50 p-4 rounded-lg">
+                        <p>The <strong>public key</strong> is like your bank account number. It's an address that you share with others to receive funds. The <strong>private key</strong> is like your account password or PIN. It's a secret code you use to "sign" (authorize) transactions, proving that you own the funds you're trying to send. The private key *must* remain secret because anyone who has it has full control over your funds and can sign transactions as you.</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-lg border border-amber-100">
+                    <h3 class="text-lg font-semibold text-stone-800">What is the main problem that Proof of Work (PoW) solves, and what is its primary disadvantage? How does Proof of Stake (PoS) attempt to solve that disadvantage?</h3>
+                    <button class="answer-toggle mt-3 text-sm font-semibold text-amber-700 hover:text-amber-600" data-target="answer-4">Show Answer</button>
+                    <div id="answer-4" class="answer-content hidden mt-3 text-stone-700 bg-orange-50 p-4 rounded-lg">
+                        <p><strong>Proof of Work (PoW)</strong> solves the consensus problem in a decentralized, trustless way by making it computationally and economically expensive to add new blocks. Its primary disadvantage is its <strong>massive energy consumption</strong>. <strong>Proof of Stake (PoS)</strong> solves this disadvantage by replacing computational competition with an economic one. Instead of miners burning energy, validators lock up their own coins (a "stake") as collateral, making it economically secure without the high energy cost.</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-lg border border-amber-100">
+                    <h3 class="text-lg font-semibold text-stone-800">Why is Byzantine Fault Tolerance (BFT) a necessary property for any blockchain consensus mechanism?</h3>
+                    <button class="answer-toggle mt-3 text-sm font-semibold text-amber-700 hover:text-amber-600" data-target="answer-5">Show Answer</button>
+                    <div id="answer-5" class="answer-content hidden mt-3 text-stone-700 bg-orange-50 p-4 rounded-lg">
+                        <p>BFT is necessary because blockchains are decentralized networks where participants don't know or trust each other. BFT is the property that allows the network to reach a correct and unified agreement (consensus) even if some of the participants (nodes) are unreliable, offline, or actively malicious (i.e., "Byzantine"). Without BFT, a few bad actors could disrupt the entire network or prevent it from ever agreeing on the next block.</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-lg shadow-lg border border-amber-100">
+                    <h3 class="text-lg font-semibold text-stone-800">You are a miner. What is the relationship between the "Difficulty," the "Nonce," and your attempt to find a valid hash for a new block?</h3>
+                    <button class="answer-toggle mt-3 text-sm font-semibold text-amber-700 hover:text-amber-600" data-target="answer-6">Show Answer</button>
+                    <div id="answer-6" class="answer-content hidden mt-3 text-stone-700 bg-orange-50 p-4 rounded-lg">
+                        <p>As a miner, your goal is to find a hash for the block that is *lower* than the network's current <strong>Difficulty</strong> target. To do this, you repeatedly hash the block's data. Since hashing the same data gives the same result, you change one piece of data, the <strong>Nonce</strong> (a random number), with every attempt. You are in a race to find a Nonce that, when combined with the rest of the block's data, produces a hash that meets the Difficulty requirement.</p>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <div id="gemini-modal" class="hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full p-6 relative">
+            <button id="modal-close-btn" class="absolute top-2 right-3 text-stone-500 hover:text-stone-800 text-4xl font-light">&times;</button>
+            <h2 id="modal-title" class="text-2xl font-bold text-amber-800 mb-4">Loading...</h2>
+            <div id="modal-content" class="text-stone-700 max-h-[60vh] overflow-y-auto pr-2">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelectorAll('.nav-tab');
+            const appContents = document.querySelectorAll('.app-content');
+
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const targetId = tab.getAttribute('data-target');
+                    
+                    tabs.forEach(t => {
+                        t.classList.remove('tab-active');
+                        t.classList.add('tab-inactive');
+                    });
+                    tab.classList.add('tab-active');
+                    tab.classList.remove('tab-inactive');
+
+                    appContents.forEach(content => {
+                        if (content.id === targetId) {
+                            content.classList.remove('hidden');
+                        } else {
+                            content.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            const conceptNavItems = document.querySelectorAll('.concept-nav-item');
+            const conceptDetailPanes = document.querySelectorAll('.concept-detail-pane');
+
+            conceptNavItems.forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = item.getAttribute('data-target');
+
+                    conceptNavItems.forEach(nav => {
+                        nav.classList.remove('concept-nav-active');
+                        nav.classList.add('concept-nav-inactive');
+                    });
+                    item.classList.add('concept-nav-active');
+                    item.classList.remove('concept-nav-inactive');
+
+                    conceptDetailPanes.forEach(pane => {
+                        if (pane.id === targetId) {
+                            pane.classList.remove('hidden');
+                        } else {
+                            pane.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            const accordionHeaders = document.querySelectorAll('.accordion-header');
+            accordionHeaders.forEach(header => {
+                header.addEventListener('click', () => {
+                    const item = header.parentElement;
+                    item.classList.toggle('accordion-open');
+                });
+            });
+
+            document.body.addEventListener('click', function(e) {
+                if (e.target.classList.contains('answer-toggle')) {
+                    const targetId = e.target.getAttribute('data-target');
+                    const answerContent = document.getElementById(targetId);
+                    if (!answerContent) return;
+                    const isHidden = answerContent.classList.contains('hidden');
+                    
+                    if (isHidden) {
+                        answerContent.classList.remove('hidden');
+                        e.target.textContent = 'Hide Answer';
+                    } else {
+                        answerContent.classList.add('hidden');
+                        e.target.textContent = 'Show Answer';
+                    }
+                }
+            });
+
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const loaderHTML = `<div class="flex items-center justify-center h-32"><div class="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-amber-600"></div></div>`;
+
+            const modal = document.getElementById('gemini-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalContent = document.getElementById('modal-content');
+            const modalCloseBtn = document.getElementById('modal-close-btn');
+
+            function openModal(title, content) {
+                modalTitle.textContent = title;
+                modalContent.innerHTML = content;
+                modal.classList.remove('hidden');
+            }
+
+            function closeModal() {
+                modal.classList.add('hidden');
+            }
+
+            modalCloseBtn.addEventListener('click', closeModal);
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+
+            async function fetchWithBackoff(url, options, retries = 3, delay = 1000) {
+                try {
+                    const response = await fetch(url, options);
+                    if (!response.ok) {
+                        if (response.status >= 400 && response.status < 500) {
+                            throw new Error(`Client error: ${response.status}`);
+                        }
+                        throw new Error(`Server error: ${response.status}`);
+                    }
+                    return response.json();
+                } catch (error) {
+                    if (retries > 0) {
+                        await new Promise(res => setTimeout(res, delay));
+                        return fetchWithBackoff(url, options, retries - 1, delay * 2);
+                    } else {
+                        throw error;
+                    }
+                }
+            }
+
+            async function callGemini(prompt, systemPrompt = "") {
+                const payload = {
+                    contents: [{ parts: [{ text: prompt }] }],
+                };
+                if (systemPrompt) {
+                    payload.systemInstruction = {
+                        parts: [{ text: systemPrompt }]
+                    };
+                }
+
+                const options = {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                };
+
+                try {
+                    const result = await fetchWithBackoff(apiUrl, options);
+                    const candidate = result.candidates?.[0];
+                    if (candidate && candidate.content?.parts?.[0]?.text) {
+                        return candidate.content.parts[0].text;
+                    } else {
+                        return "Sorry, I couldn't get a response. The response might be blocked or empty. Please try again.";
+                    }
+                } catch (error) {
+                    return `An error occurred while fetching the response. Please check your connection and try again.`;
+                }
+            }
+
+            const explainButtons = document.querySelectorAll('.gemini-explain-btn');
+            explainButtons.forEach(button => {
+                button.addEventListener('click', async () => {
+                    const concept = button.dataset.concept;
+                    openModal(`✨ Explaining: ${concept}`, loaderHTML);
+                    
+                    const systemPrompt = "You are a friendly and helpful teaching assistant. You are explaining a complex blockchain concept to a university student who is new to the topic.";
+                    const prompt = `Explain the blockchain concept "${concept}" in simple, easy-to-understand terms. Use a real-world analogy if it helps to clarify it. Format the response with paragraphs.`;
+                    
+                    const response = await callGemini(prompt, systemPrompt);
+                    modalContent.innerHTML = `<div class="whitespace-pre-wrap font-sans">${response.replace(/\n/g, '<br><br>')}</div>`;
+                });
+            });
+
+            const genQuestionsBtn = document.getElementById('generate-questions-btn');
+            genQuestionsBtn.addEventListener('click', async () => {
+                openModal("✨ Generating New Questions...", loaderHTML);
+                
+                const systemPrompt = "You are a university professor creating a practice quiz for a 'Blockchain 101' course. Your goal is to test understanding, not just memorization.";
+                const prompt = `Based on these core blockchain concepts: Immutability, Public vs Private Blockchains, Proof of Work, Proof of Stake, Smart Contracts, Hashing, and Merkle Trees, please generate 3 unique practice questions. For each question, provide a clear answer. Format the output *exactly* like this, with no other text:
+Q1: [Question]
+A1: [Answer]
+Q2: [Question]
+A2: [Answer]
+Q3: [Question]
+A3: [Answer]`;
+                
+                const response = await callGemini(prompt, systemPrompt);
+                modalTitle.textContent = "✨ New Practice Questions";
+                modalContent.innerHTML = formatGeminiQuestions(response);
+            });
+
+            function formatGeminiQuestions(text) {
+                const questions = text.split(/Q\d+:/).filter(Boolean);
+                let html = '<div class="space-y-4">';
+                questions.forEach((q, index) => {
+                    const parts = q.split(/A\d+:/);
+                    const questionText = parts[0] ? parts[0].trim() : '';
+                    const answerText = parts[1] ? parts[1].trim() : 'No answer provided.';
+                    
+                    if (!questionText) return;
+
+                    const answerId = `gen-answer-${Date.now()}-${index}`;
+                    html += `
+                        <div class="bg-orange-50 p-4 rounded-lg border border-amber-200">
+                            <h3 class="text-lg font-semibold text-stone-800">${questionText.replace(/\n/g, '<br>')}</h3>
+                            <button class="answer-toggle mt-3 text-sm font-semibold text-amber-700 hover:text-amber-600" data-target="${answerId}">Show Answer</button>
+                            <div id="${answerId}" class="answer-content hidden mt-3 text-stone-700 bg-white p-4 rounded-lg">
+                                <p>${answerText.replace(/\n/g, '<br>')}</p>
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                return html;
+            }
+        });
+    </script>
+
+</body>
+</html>
